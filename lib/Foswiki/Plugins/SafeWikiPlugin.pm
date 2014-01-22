@@ -14,7 +14,7 @@ use Foswiki::Plugins::SafeWikiPlugin::Parser     ();
 use Foswiki::Plugins::SafeWikiPlugin::CoreHooks  ();
 use Foswiki::Sandbox                             ();
 
-our $VERSION = '$Rev$';
+our $VERSION = '2.0';
 our $RELEASE = "2.0";
 our $SHORTDESCRIPTION =
   'Secure your Foswiki so it can\'t be used for mounting phishing attacks';
