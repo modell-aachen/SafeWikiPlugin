@@ -173,7 +173,7 @@ sub unhoist {
         my @safe_macros = @SAFE_EXPAND;
         my $code        = $HOISTED_CODE{$sig};
         $code =~ s/\$id\b/$id/g;
-        $code =~ s/\$zone\b/$item->{zone}/g;
+        $code =~ s/\$zone\b/$zone/g;
 
         # Expand unescaped macros
         # These can only really exist at this point if the zone entry was
