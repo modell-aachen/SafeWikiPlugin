@@ -148,7 +148,7 @@ sub processZone {
     # lift out this block and put it back later
   TRUST: {
         $HOISTED_CODE{$realMAC} = $data;
-        $zone->{text} = "<!--safewiki:$realMAC-->";
+        $zone->{text} = "<!--safewiki:$realMAC:\$zone;;\$id-->";
     }
 }
 
@@ -160,7 +160,9 @@ sub processZone {
 sub unhoist {
     my $topicObject = pop;
     my $unhoist     = sub {
-        my $sig = shift;
+        my $sig  = shift;
+        my $zone = shift;
+        my $id   = shift;
         if ( !exists $HOISTED_CODE{$sig} ) {
             Foswiki::Func::writeWarning(
                 "Attempt to unhoist unknown signed code: $sig");
@@ -170,6 +172,8 @@ sub unhoist {
         # Unescape and expand macros if they are successfully validated
         my @safe_macros = @SAFE_EXPAND;
         my $code        = $HOISTED_CODE{$sig};
+        $code =~ s/\$id\b/$id/g;
+        $code =~ s/\$zone\b/$zone/g;
 
         # Expand unescaped macros
         # These can only really exist at this point if the zone entry was
@@ -196,22 +200,24 @@ sub unhoist {
 
     # Work in order of appearance, just in case the order of macro expansion
     # matters
-    $_[0] =~ s/<!--safewiki:([0-9A-Za-z\/\+]{27})-->/$unhoist->($1)/eg;
+    $_[0] =~
+s/<!--safewiki:([0-9A-Za-z\/\+]{27}):([^;]+);;(.*?)-->/$unhoist->($1,$2,$3)/eg;
 
     # We can get rid of temporary signatures now -- all processing is over
     %TMP_SIGNATURES = ();
 }
 
+#SMELL: Foswiki::encode_utf8 is Foswiki 2.x only!
 sub getMAC {
     my $text = shift;
     my $key  = $Foswiki::cfg{Plugins}{SafeWikiPlugin}{SecretKey};
-    my $mac  = Digest::HMAC_SHA1->new($key);
-    $mac->add($text);
+    my $mac  = Digest::HMAC_SHA1->new( Foswiki::encode_utf8($key) );
+    $mac->add( Foswiki::encode_utf8($text) );
     return $mac->b64digest;
 }
 
 # Simple: hash a piece of code
-sub getSHA { return sha256_base64(shift); }
+sub getSHA { return sha256_base64( Foswiki::encode_utf8(shift) ); }
 
 # Check if we have the signature for a piece of code in our whitelist
 sub checkSHA { return _haveSHA( getSHA(shift) ); }
@@ -339,4 +345,3 @@ http://www.gnu.org/copyleft/gpl.html
 
 This notice must be retained in all copies or derivatives of this
 code.
-
