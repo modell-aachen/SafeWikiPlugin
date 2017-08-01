@@ -57,17 +57,8 @@ sub completePageHandler {
 
     #my($html, $httpHeaders) = @_;
 
-    return unless $_[1] =~ m#^Content-type: text/html#mi;
+    return unless $_[1] =~ m#^Content-type: (text/html|application/pdf)#mi;
     return if Foswiki::Func::getContext()->{'OverrideSafeWikiPlugin'};
-
-    # PDF generation fails if we filter it, so don't do that
-    if ( exists $Foswiki::cfg{Plugins}{GenPDFPrincePlugin}{Enabled}
-        && $Foswiki::cfg{Plugins}{GenPDFPrincePlugin}{Enabled} )
-    {
-        my $query = Foswiki::Func::getCgiQuery();
-        my $contenttype = $query->param("contenttype") || 'text/html';
-        return if $contenttype eq 'application/pdf';
-    }
 
    # Some ajax requests fetch text without being wrapped in <html>..</html>
    # It results in a parser error: Unexpected leaf: 0:  If the tags are missing,
