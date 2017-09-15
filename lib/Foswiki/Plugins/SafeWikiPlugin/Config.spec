@@ -98,7 +98,7 @@ $Foswiki::cfg{Plugins}{SafeWikiPlugin}{ShowFilteredCode} = 0;
 $Foswiki::cfg{Plugins}{SafeWikiPlugin}{URIAttributes} = {
     APPLET     => [ 'archive', 'code', 'codebase' ],
     EMBED      => [ 'pluginspace', 'pluginurl', 'src' ],
-    OBJECT     => [ 'archive', 'codebase' ],
+    OBJECT     => [ 'archive', 'codebase', 'data' ],
     SCRIPT     => [ 'src' ]
 };
 
