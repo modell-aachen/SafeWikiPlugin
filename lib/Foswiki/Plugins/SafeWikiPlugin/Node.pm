@@ -214,13 +214,15 @@ sub _filterURIs {
     my ( $this, $tag, $filter, $filterHandler ) = @_;
 
     # Unconditionally filter javascript: links
+    my @toFilter = ('formaction');
     if ( exists $uriTags{$tag} ) {
-        foreach my $attr ( @{ $uriTags{$tag} } ) {
-            if ( defined( $this->{attrs}{$attr} ) ) {
-                next if ( $this->{attrs}{$attr} !~ /^\s*javascript:(.*)$/i );
-                my $code = &$filterHandler($1);
-                $this->{attrs}{$attr} = "javascript:$code";
-            }
+        push @toFilter, @{$uriTags{$tag}};
+    }
+    foreach my $attr ( @toFilter ) {
+        if ( defined( $this->{attrs}{$attr} ) ) {
+            next if ( $this->{attrs}{$attr} !~ /^\s*javascript:(.*)$/i );
+            my $code = &$filterHandler($1);
+            $this->{attrs}{$attr} = "javascript:$code";
         }
     }
 
