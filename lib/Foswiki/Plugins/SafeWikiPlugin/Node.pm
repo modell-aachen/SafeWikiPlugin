@@ -19,7 +19,8 @@ use HTML::Entities;
 # This is horribly misformatted because the perltidy is forcing me to
 # do it this way.
 my %uriTags = (
-    A          => ['href'],
+    A          => ['href', 'xlink:href'],
+    SVG        => ['xlink:href'],
     APPLET     => [ 'archive', 'code', 'codebase' ],
     AREA       => ['href'],
     AUDIO      => ['src'],
