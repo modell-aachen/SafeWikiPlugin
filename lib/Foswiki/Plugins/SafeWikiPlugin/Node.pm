@@ -66,7 +66,7 @@ sub stringify {
     my ( $this, $shallow ) = @_;
     my $r = '';
     if ( $this->{tag} ) {
-        $r .= '<' . $this->{tag};
+        $r .= '<' . $this->_getFilteredTag();
         foreach my $attr ( keys %{ $this->{attrs} } ) {
             if ( $attr =~ /^[\w+:]$/ ) {
                 $r .= " " . $attr . "='" . $this->{attrs}->{$attr} . "'";
@@ -98,10 +98,26 @@ sub addChild {
     push( @{ $this->{children} }, $node );
 }
 
+sub _getFilteredTag {
+    my ( $this ) = @_;
+
+    my $tag = $this->{tag};
+
+    if($tag =~ s#([^\w\d-].*)##) {
+        my $escaped = Foswiki::entityEncode($this->{tag});
+        my $error = "Tag name filtered by SafeWikiPlugin: ";
+        Foswiki::Func::writeWarning($error . $this->{tag});
+        $this->{attrs}->{safeWikiPluginWarning} = $error . $escaped;
+    }
+
+    return $tag;
+}
+
 # generate the parse tree, applying filters
 sub generate {
     my ( $this, $filterURI, $filterHandler, $filterInline ) = @_;
-    my $tag = $this->{tag};
+
+    my $tag = $this->_getFilteredTag();
 
     # make the names of the function versions
     my $f = uc($tag);
