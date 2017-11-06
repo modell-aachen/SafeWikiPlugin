@@ -57,7 +57,7 @@ sub completePageHandler {
 
     #my($html, $httpHeaders) = @_;
 
-    return unless $_[1] =~ m#^Content-type: (text/html|application/pdf)#mi;
+    return unless $_[1] =~ m#^Content-type: (?:text/html|application/pdf)#mi;
     return if Foswiki::Func::getContext()->{'OverrideSafeWikiPlugin'};
 
    # Some ajax requests fetch text without being wrapped in <html>..</html>

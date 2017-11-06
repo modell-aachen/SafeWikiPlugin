@@ -19,7 +19,8 @@ use HTML::Entities;
 # This is horribly misformatted because the perltidy is forcing me to
 # do it this way.
 my %uriTags = (
-    A          => ['href'],
+    A          => ['href', 'xlink:href'],
+    SVG        => ['xlink:href'],
     APPLET     => [ 'archive', 'code', 'codebase' ],
     AREA       => ['href'],
     AUDIO      => ['src'],
@@ -65,7 +66,7 @@ sub stringify {
     my ( $this, $shallow ) = @_;
     my $r = '';
     if ( $this->{tag} ) {
-        $r .= '<' . $this->{tag};
+        $r .= '<' . $this->_getFilteredTag();
         foreach my $attr ( keys %{ $this->{attrs} } ) {
             if ( $attr =~ /^[\w+:]$/ ) {
                 $r .= " " . $attr . "='" . $this->{attrs}->{$attr} . "'";
@@ -97,10 +98,26 @@ sub addChild {
     push( @{ $this->{children} }, $node );
 }
 
+sub _getFilteredTag {
+    my ( $this ) = @_;
+
+    my $tag = $this->{tag};
+
+    if($tag =~ s#([^\w\d-].*)##) {
+        my $escaped = Foswiki::entityEncode($this->{tag});
+        my $error = "Tag name filtered by SafeWikiPlugin: ";
+        Foswiki::Func::writeWarning($error . $this->{tag});
+        $this->{attrs}->{safeWikiPluginWarning} = $error . $escaped;
+    }
+
+    return $tag;
+}
+
 # generate the parse tree, applying filters
 sub generate {
     my ( $this, $filterURI, $filterHandler, $filterInline ) = @_;
-    my $tag = $this->{tag};
+
+    my $tag = $this->_getFilteredTag();
 
     # make the names of the function versions
     my $f = uc($tag);
@@ -213,13 +230,15 @@ sub _filterURIs {
     my ( $this, $tag, $filter, $filterHandler ) = @_;
 
     # Unconditionally filter javascript: links
+    my @toFilter = ('formaction');
     if ( exists $uriTags{$tag} ) {
-        foreach my $attr ( @{ $uriTags{$tag} } ) {
-            if ( defined( $this->{attrs}{$attr} ) ) {
-                next if ( $this->{attrs}{$attr} !~ /^\s*javascript:(.*)$/i );
-                my $code = &$filterHandler($1);
-                $this->{attrs}{$attr} = "javascript:$code";
-            }
+        push @toFilter, @{$uriTags{$tag}};
+    }
+    foreach my $attr ( @toFilter ) {
+        if ( defined( $this->{attrs}{$attr} ) ) {
+            next if ( $this->{attrs}{$attr} !~ /^\s*javascript:(.*)$/i );
+            my $code = &$filterHandler($1);
+            $this->{attrs}{$attr} = "javascript:$code";
         }
     }
 
